@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeChoice</title>
+    <link rel="stylesheet" href="./src/styles/reset.css">
+    <link rel="stylesheet" href="./src/styles/style.css">
+</head>
+<body>
+    <header>
+        <div class="title-container">
+            <h1>Baxter HomeChoice Simulator</h1>
+        </div>
+    </header>
+    <main>
+        <div class="main-container">
+            <div class="control-panel">
+                <div id="panel" class="panel">
+                    <div id="display" class="display"></div>
+                    <button id="go" class="go"></button>
+                    <button id="stop" class="stop"></button>
+                    <button id="enter" class="enter"></button>
+                    <button id="arrow-up" class="arrow-up"></button>
+                    <button id="arrow-down" class="arrow-down"></button>
+                </div>
+                <div id="power" class="power">
+                    <img id="off" class="off" src="./src/images/power-off.png" alt="button power off"/>
+                    <img id="on" class="on" src="./src/images/power-on.png" alt="button power on"/>
+                    <button id="on-off" class="on-off"></button>
+                </div>
+                <div id="cassete" class="cassete">
+                    <img id="sticker" class="sticker" src="./src/images/sticker.png" alt="homechoice's stick cassete door">
+                    <img id="door" class="door" draggable="false" src="./src/images/equipo-door.png" alt="homechoice's cassete door">
+                </div>
+                <div id="connections" class="connections"></div>
+                <div class="console-container">
+                    <div id="console" class="console"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <footer>
+        <div class="footer-content">Copyright ©</div>
+    </footer>
+    <script src="./src/javascript/states.js"></script>
+    <script src="./src/javascript/display.js"></script>
+    <script src="./src/javascript/procedurals.js"></script>
+    <script src="./src/javascript/mainframe.js"></script>
+</body>
+</html>

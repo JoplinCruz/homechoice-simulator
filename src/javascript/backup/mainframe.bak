@@ -1,0 +1,148 @@
+
+const homePanel = document.querySelector("#panel");
+const homePower = document.querySelector("#power");
+const homeCassete = document.querySelector("#cassete");
+const homeConnections = document.querySelector("#connections");
+
+const homeButtonOnIMG = document.querySelector("#on");
+const homeButtonOffIMG = document.querySelector("#off");
+
+const homeDisplay = document.querySelector("#display");
+const homeConsole = document.querySelector("#console");
+
+const buttonGO = document.querySelector("#go");
+const buttonSTOP = document.querySelector("#stop");
+const buttonENTER = document.querySelector("#enter");
+const buttonUP = document.querySelector("#arrow-up");
+const buttonDOWN = document.querySelector("#arrow-down");
+const buttonPOWER = document.querySelector("#on-off")
+
+homeButtonOnIMG.style.display = "none";
+
+const states = new States();
+const display = new Display(
+    homeDisplay,
+    homeConsole
+);
+const procedurals = new Procedurals(
+    display,
+    buttons,
+    modules
+);
+
+function pressButton(event) {
+    let button = event.target.id;
+
+    switch (button) {
+        case "go":
+            buttons.GO = true;
+            break;
+        case "stop":
+            buttons.STOP = true;
+            break;
+        case "enter":
+            buttons.ENTER = true;
+            break;
+        case "arrow-up":
+            buttons.UP = true;
+            break;
+        case "arrow-down":
+            buttons.DOWN = true;
+            break;
+        case _:
+            break;
+    }
+}
+
+function activeButtons() {
+    buttonGO.addEventListener("click", pressButton);
+    buttonSTOP.addEventListener("click", pressButton);
+    buttonENTER.addEventListener("click", pressButton);
+    buttonUP.addEventListener("click", pressButton);
+    buttonDOWN.addEventListener("click", pressButton);
+
+    power.INIT = true;
+}
+
+function deactiveButtons() {
+    buttonGO.removeEventListener("click", pressButton);
+    buttonSTOP.removeEventListener("click", pressButton);
+    buttonENTER.removeEventListener("click", pressButton);
+    buttonUP.removeEventListener("click", pressButton);
+    buttonDOWN.removeEventListener("click", pressButton);
+
+    power.INIT = false;
+}
+
+function running() {
+    intervals.ID = setInterval(mainframe, 1000 / fps);
+}
+
+function breaking() {
+    deactiveButtons();
+    clearInterval(intervals.ID);
+}
+
+function mainframe() {
+
+    if (timer.ON && !timer.PAUSE) timer.CURRENT++;
+
+    homePanel.style.display = modules.DISPLAY ? "" : "none";
+    homePower.style.display = modules.POWER ? "" : "none";
+    homeCassete.style.display = modules.CASSETE ? "" : "none";
+    homeConnections.style.display = modules.CONNECTIONS ? "" : "none";
+    
+    if (power.ON) {
+        if (!power.INIT) {
+            activeButtons();
+        }
+    }
+    if (!power.ON && power.INIT) deactiveButtons();
+
+    switch (procedurals.treatment()) {
+        case proc.INIT:
+            procedurals.init();
+            break;
+        case proc.STARTUP:
+            procedurals.start();
+            break;
+        case proc.CASSETE:
+            procedurals.cassete()
+            break;
+        case proc.BAGS:
+            procedurals.bags(5);
+            break;
+        case proc.CONNECT:
+            procedurals.connect(5);
+            break;
+        case proc.DRAIN:
+            procedurals.drain(5);
+            break;
+        case proc.INFUND:
+            procedurals.infund(5);
+            break;
+        case proc.SHUTDOWN:
+            procedurals.shutdown(5);
+            break;
+        case proc.OPTIONS:
+            procedurals.options(5);
+            break;
+        case proc.INTERRUPTION:
+            procedurals.interruption(5);
+            break;
+    }
+
+    if (timer.ON) {
+        if (timer.LOOP) {
+            timer.DURATION = timer.DURATION < timer.OUT ? timer.OUT : timer.DURATION;
+            timer.CURRENT = timer.CURRENT === timer.OUT ? timer.IN : timer.CURRENT;
+        }
+        if (timer.CURRENT < timer.DURATION) timer.ON = true;
+        if (timer.CURRENT >= timer.DURATION) {
+            timer.ON = false;
+            timer.CURRENT = timer.START;
+        }
+    }
+}
+
+running();

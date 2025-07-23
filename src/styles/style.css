@@ -1,0 +1,341 @@
+@import url('https://fonts.googleapis.com/css2?family=Dosis:wght@200..800&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Pixelify+Sans:wght@400..700&family=Saira:ital,wght@0,100..900;1,100..900&family=Smooch+Sans:wght@100..900&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&display=swap');
+@font-face {
+    font-family: "LED CALCULATOR";
+    src: url("../fonts/LEDCalculator.ttf") format("truetype");
+}
+
+:root {
+    --fore-color: #acfeba;
+    --back-color: #161723;
+    --header-color: #5a1212;
+    --display-color: #139a25;
+    --console-color: #202924;
+    --accent-color: 10;
+    --panel-width: 17;
+    --panel-height: 10;
+    --panel-scale: 1.5;
+    --font-size: 1rem;
+    --sticker-rotation: 0;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    font-family: "Smooch Sans", Arial, Helvetica, sans-serif;
+    color: hsl(from var(--fore-color) h s l /1);
+    background-color: hsl(from var(--back-color) h s l /1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* HEADER */
+header {
+    width: 100%;
+}
+
+.title-container {
+    /* width: 100%; */
+    padding: .5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: hsl(from var(--header-color) h s calc(l + var(--accent-color) * 7));
+    background-color: hsl(from var(--header-color) h s l /1);
+}
+
+.title-container h1 {
+    font-size: 2.4rem;
+}
+
+main {
+    width: 100%;
+    height: 100%;
+}
+
+/* ---------------------------------------------------------------------------------- */
+
+/* MAIN */
+.main-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+/* CONTROL PANEL configuration */
+.control-panel {
+    display: flex;
+    flex-direction: column;
+    margin: calc(.4rem * var(--panel-scale)) 0;
+    gap: calc(.4rem * var(--panel-scale));
+}
+
+.control-panel .panel {
+    width: calc(var(--panel-width) * var(--panel-scale) * 1rem);
+    height: calc(var(--panel-height) * var(--panel-scale) * 1rem);
+    flex: none;
+    border: solid .1rem hsl(from var(--back-color) h s calc(l + var(--accent-color)) /1);
+    border-radius: calc(.18rem * var(--panel-scale));
+    background-image: url("../images/homechoice-panel.png");
+    background-size: 100%;
+    background-repeat: no-repeat;
+}
+
+/* DISPLAY configuration */
+
+.panel .display {
+    position: absolute;
+    font-family: "LED CALCULATOR";
+    font-size: calc(var(--panel-scale) * .8rem);
+    letter-spacing: calc(.1rem * var(--panel-scale));
+    width: calc(12.8rem * var(--panel-scale));
+    height: calc(1.7rem * var(--panel-scale));
+    display: flex;
+    align-items: center;
+    translate: calc(2.5rem * var(--panel-scale)) calc(2.1rem * var(--panel-scale));
+    color: hsl(from var(--display-color) h s calc(l + var(--accent-color) * 1.5) /1);
+    text-shadow:
+        0 0 calc(.2rem * var(--panel-scale)) hsl(from var(--display-color) h s calc(l + var(--accent-color) * 2) /.7),
+        0 0 calc(.3rem * var(--panel-scale)) hsl(from var(--display-color) h s calc(l - var(--accent-color) * 1) /1),
+        0 0 calc(.9rem * var(--panel-scale)) hsl(from var(--display-color) h s calc(l - var(--accent-color) * 2) /1)
+    ;
+}
+
+/* BUTTONS configuration */
+
+/* button GO */
+.panel .go {
+    position: absolute;
+    width: calc(1.86rem * var(--panel-scale));
+    height: calc(1.86rem * var(--panel-scale));
+    translate: calc(2.8rem * var(--panel-scale)) calc(5.1rem * var(--panel-scale));
+    border-radius: calc(.93rem * var(--panel-scale));
+
+    border: none;
+    background-color: transparent;
+}
+
+.panel .go:hover {
+    cursor: pointer;
+}
+
+
+/* button STOP */
+.panel .stop {
+    position: absolute;
+    width: calc(1.86rem * var(--panel-scale));
+    height: calc(1.86rem * var(--panel-scale));
+    translate: calc(6.05rem * var(--panel-scale)) calc(5.1rem * var(--panel-scale));
+    border-radius: calc(.93rem * var(--panel-scale));
+
+    border: none;
+    background-color: transparent;
+}
+
+.panel .stop:hover {
+    cursor: pointer;
+}
+
+/* button ENTER */
+.panel .enter {
+    position: absolute;
+    width: calc(1.86rem * var(--panel-scale));
+    height: calc(1.86rem * var(--panel-scale));
+    translate: calc(10.83rem * var(--panel-scale)) calc(5.1rem * var(--panel-scale));
+    border-radius: calc(.93rem * var(--panel-scale));
+
+    border: none;
+    background-color: transparent;
+}
+
+.panel .enter:hover {
+    cursor: pointer;
+}
+
+
+/* button ARROW UP */
+.panel .arrow-up {
+    position: absolute;
+    width: calc(1.5rem * var(--panel-scale));
+    height: calc(1.5rem * var(--panel-scale));
+    translate: calc(13.3rem * var(--panel-scale)) calc(4.5rem * var(--panel-scale));
+    border-radius: calc(.75rem * var(--panel-scale));
+
+    border: none;
+    background-color: transparent;
+}
+
+.panel .arrow-up:hover {
+    cursor: pointer;
+}
+
+
+/* button ARROW DOWN */
+.panel .arrow-down {
+    position: absolute;
+    width: calc(1.5rem * var(--panel-scale));
+    height: calc(1.5rem * var(--panel-scale));
+    translate: calc(13.3rem * var(--panel-scale)) calc(6.06rem * var(--panel-scale));
+    border-radius: calc(.75rem * var(--panel-scale));
+
+    border: none;
+    background-color: transparent;
+}
+
+.panel .arrow-down:hover {
+    cursor: pointer;
+}
+/* ------------------------------------------------------------------------------------- */
+
+/* back machine configuration */
+.control-panel .power {
+    width: calc(var(--panel-width) * var(--panel-scale) * 1rem);
+    height: calc(var(--panel-height) * var(--panel-scale) * 1rem);
+    flex: none;
+    overflow: hidden;
+    border: solid .1rem hsl(from var(--back-color) h s calc(l + var(--accent-color)) /1);
+    border-radius: calc(.18rem * var(--panel-scale));
+    background-image: url("../images/homechoice-back.png");
+    background-size: 100%;
+    background-repeat: no-repeat;
+}
+
+.power .on {
+    position: absolute;
+    width: calc(var(--panel-scale) * 2.1rem);
+    translate: calc(var(--panel-scale) * 3.9rem) calc(var(--panel-scale) * 4.3rem);
+}
+
+.power .off {
+    position: absolute;
+    width: calc(var(--panel-scale) * 1.8rem);
+    translate: calc(var(--panel-scale) * 4.1rem) calc(var(--panel-scale) * 4.3rem);
+}
+
+.power .on-off {
+    position: absolute;
+    width: calc(1.2rem * var(--panel-scale));
+    height: calc(1.8rem * var(--panel-scale));
+    translate: calc(var(--panel-scale) * 4.2rem) calc(var(--panel-scale) * 4.3rem);
+    border: none;
+    background-color: transparent;
+}
+
+.power .on-off:hover {
+    cursor: pointer;
+}
+/* --------------------------------------------------------------------------------------- */
+
+/* cassete */
+.control-panel .cassete {
+    width: calc(var(--panel-width) * var(--panel-scale) * 1rem);
+    height: calc(var(--panel-height) * var(--panel-scale) * 1rem);
+    flex: none;
+    overflow: hidden;
+    border: solid .1rem hsl(from var(--back-color) h s calc(l + var(--accent-color)) /1);
+    border-radius: calc(.18rem * var(--panel-scale));
+    background-image: url("../images/homechoice-cassete.png");
+    background-size: 100%;
+    background-repeat: no-repeat;
+}
+
+.cassete .sticker {
+    position: absolute;
+    cursor: move;
+    width: calc(var(--panel-scale) * 5rem);
+    transform:
+        translate(calc(var(--panel-scale) * .3rem), calc(var(--panel-scale) * 6.4rem))
+        rotateZ(var(--sticker-rotation));
+}
+
+.cassete .door {
+    position: absolute;
+    width: calc(var(--panel-scale) * 12.6rem);
+    transform: translate(calc(var(--panel-scale) * 3.75rem), calc(var(--panel-scale) * 0.65rem));
+}
+/* --------------------------------------------------------------------------------------- */
+
+/* connections */
+.control-panel .connections {
+    width: calc(var(--panel-width) * var(--panel-scale) * 1rem);
+    height: calc(var(--panel-height) * var(--panel-scale) * 1rem);
+    flex: none;
+    overflow: hidden;
+    border: solid .1rem hsl(from var(--back-color) h s calc(l + var(--accent-color)) /1);
+    border-radius: calc(.18rem * var(--panel-scale));
+    /* background-image: url("../images/homechoice-back.png");
+    background-size: 100%;
+    background-repeat: no-repeat; */
+}
+/* --------------------------------------------------------------------------------------- */
+
+/* console configuration */
+.control-panel .console-container {
+    width: calc(var(--panel-width) * var(--panel-scale) * 1rem);
+    /* height: calc(100% - var(--panel-scale) * var(--panel-height) * 1rem - .7rem); */
+    flex-shrink: 1;
+    flex-grow: 1;
+    border: solid .1rem hsl(from var(--back-color) h s calc(l + var(--accent-color)) /1);
+    border-radius: calc(.18rem * var(--panel-scale));
+    background-color: hsl(from var(--console-color) h s calc(l - var(--accent-color)) /1);
+    overflow-y: auto;
+}
+
+.console-container::-webkit-scrollbar {
+    width: .4rem;
+    height: .4rem;
+}
+
+.console-container::-webkit-scrollbar-thumb {
+    background-color: #161723;
+    border-radius: .2rem;
+}
+
+.console-container .console {
+    height: 100%;
+    font-family: "Titillium Web";
+    font-size: calc(.8rem * var(--panel-scale));
+    font-weight: 300;
+    padding: calc(.4rem * var(--panel-scale));
+}
+
+.console h3 {
+    font-weight: 400;
+    color: hsl(from var(--fore-color) h s l /1);
+}
+
+.console p {
+    font-weight: 100;
+    color: hsl(from var(--display-color) h s calc(l + var(--accent-color) * 2) /1);
+}
+
+.console ul, ol {
+    font-weight: 600;
+    color: hsl(from var(--fore-color) h s l /1);
+}
+
+.console button {
+    font-family: "Smooch Sans";
+    font-size: calc(.8rem * var(--panel-scale));
+    color: hsl(from var(--fore-color) h s l /1);
+    background-color: hsl(from var(--back-color) h s calc(l + var(--accent-color)) /1);
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.console strong {
+    font-weight: 400;
+    color: hsl(from var(--display-color) h s calc(l + var(--accent-color) * 3) /1);
+}
+/* ---------------------------------------------------------------------------------------- */
+
+/* FOOTER */
+footer {
+    width: 100%;
+    padding: .5rem;
+    color: hsl(from var(--header-color) h s calc(l + var(--accent-color) * 7) /1);
+    background-color: hsl(from var(--header-color) h s l /1);
+    text-align: center;
+}

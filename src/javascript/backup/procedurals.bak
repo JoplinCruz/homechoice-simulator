@@ -1,0 +1,188 @@
+
+class Procedurals {
+    constructor(display, buttons, modules) {
+        this.display = display;
+        this.buttons = buttons;
+        this.modules = modules;
+        this.process = proc.INIT;
+        this.processMemo = null;
+        this.descriptionMemo = null;
+        this.menu = [
+            "option #1",
+            "option #2",
+            "option #3",
+        ]
+        this.index = 0;
+    }
+
+    options(duration) {
+
+        this.display.live(this.menu[this.index]);
+
+        if (this.buttons.STOP) {
+            this.buttons.STOP = false;
+            this.process = this.processMemo;
+            timer.CURRENT = timer.START;
+            timer.ON = true;
+        }
+        
+        if (this.buttons.UP) {
+            this.index -= 1;
+            this.buttons.UP = false;
+        }
+
+        if (this.buttons.DOWN) {
+            this.index += 1;
+            this.buttons.DOWN = false;
+        }
+    
+        this.index = this.index < 0 ? this.menu.length - 1 : this.index > this.menu.length - 1 ? 0 : this.index;
+    }
+
+    init(duration) {
+        timer.DURATION = duration;
+
+        if (timer.CURRENT === 0) {
+            timer.CURRENT = 1;
+            let message = `
+                Clique <button id="access-power"><span>aqui</span></button> para ligar o Homechoice.
+            `;
+            this.display.description("bem-vindo(a)", message);
+            let buttonAccessPower = document.querySelector("#access-power");
+            buttonAccessPower.onclick = () => {
+                this.powerON();
+            }
+        }
+
+        if (power.ON) {
+            this.process = proc.STARTUP;
+            timer.CURRENT = timer.START;
+            timer.ON = true;
+            power.INIT = true;
+        }
+
+        this.uncheckButtons();
+    }
+
+    start(duration) {
+        timer.DURATION = duration * fps;
+
+        if (timer.CURRENT === 0) {
+            this.display.live(""); 
+            let text = `
+                Inicializando o sistema...
+                <br>
+                Aguarde até estar pronto.
+            `
+            this.display.description("homechoice", text);    
+        }
+
+        if (timer.CURRENT === 3)
+            this.display.live("█", "left");
+
+        if (timer.CURRENT === 15)
+            this.display.live("██████████████████████");
+
+        if (timer.CURRENT === 90)
+            this.display.live("");
+
+        if (timer.CURRENT === 120) {
+            this.display.live("aperte go p/ iniciar");
+            let text = `
+                Pressione o botão GO para continuar...
+            `
+            this.display.description("homechoice", text);
+        }
+
+        if (this.buttons.GO) {
+            this.process = proc.CASSETE;
+            timer.CURRENT = timer.START;
+            timer.ON = true;
+        }
+
+        this.uncheckButtons();
+    }
+
+    cassete(duration) {
+        timer.DURATION = duration * fps;
+
+        let interval = (timer.CURRENT / fps) >> 0;
+
+        if (timer.CURRENT === 0) {
+            timer.LOOP = true;
+            timer.IN = 1;
+            timer.OUT = 60;
+        }        
+        
+        if (timer.CURRENT >= 0 && timer.CURRENT < 60) {
+            if (interval % 2 === 0)
+                this.display.live("inserting cassete...");
+            else
+                this.display.live("close clamps...");
+        }
+        
+        if (this.buttons.GO) {
+            this.process = proc.BAGS;
+
+            timer.CURRENT = timer.START;
+            timer.ON = true;
+        }
+
+        if (this.buttons.UP || this.buttons.DOWN) {
+            this.processMemo = this.process;
+            this.process = proc.OPTIONS;
+
+            timer.LOOP = false;
+            timer.CURRENT = timer.START;
+        }
+
+        this.uncheckButtons();
+    }
+
+    bags(duration) {
+        if (timer.CURRENT === 0) this.display.live("estou aqui.");
+        if (timer.CURRENT === 30) timer.PAUSE = true;
+    }
+
+    connect(duration) { }
+
+    disconnect(duration) { }
+
+    drain(duration) { }
+
+    infund(duration) { }
+
+    clamp(duration) { }
+
+    unclamp(duration) { }
+
+    shutdown(duration) { }
+
+    interruption(duration) { }
+
+    treatment() {
+        return this.process;
+    }
+
+    powerON() {
+        this.modules.DISPLAY = false;
+        this.modules.POWER = true;
+
+        this.display.description("homechoice traseira", "aperte o botão LIGA/DESLIGA para iniciar o sistema Homechoice.")
+
+        buttonPOWER.onclick = () => {
+            homeButtonOffIMG.style.display = "none";
+            homeButtonOnIMG.style.display = "";
+            setTimeout(() => {
+                this.modules.POWER = false;
+                this.modules.DISPLAY = true;
+                power.ON = true;
+            }, 3000)
+        }
+    }
+
+    uncheckButtons() {
+        for (let button in this.buttons)
+            this.buttons[button] = false;
+    }
+}
