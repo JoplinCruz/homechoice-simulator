@@ -3,6 +3,7 @@ const homePanel = document.querySelector("#panel");
 const homePower = document.querySelector("#power");
 const homeCassete = document.querySelector("#cassete");
 const homeConnections = document.querySelector("#connections");
+const homeTutor = document.querySelector("#tutor");
 
 const homeButtonOnIMG = document.querySelector("#on");
 const homeButtonOffIMG = document.querySelector("#off");
@@ -25,7 +26,7 @@ const display = new Display(
 );
 const procedurals = new Procedurals(
     display,
-    { homePanel, homePower, homeCassete, homeConnections }
+    { homePanel, homePower, homeCassete, homeConnections, homeTutor }
 );
 
 function pressButton(event) {
@@ -89,6 +90,7 @@ function mainframe() {
     homePower.style.display = procedurals.modules.POWER ? "" : "none";
     homeCassete.style.display = procedurals.modules.CASSETE ? "" : "none";
     homeConnections.style.display = procedurals.modules.CONNECTIONS ? "" : "none";
+    homeTutor.style.display = procedurals.modules.TUTOR ? "" : "none";
     
     if (procedurals.power.ON) {
         if (!procedurals.power.INIT) {

@@ -45,6 +45,7 @@ class States {
         POWER: false,
         CASSETE: false,
         CONNECTIONS: false,
+        TUTOR: false,
     }
 }
 

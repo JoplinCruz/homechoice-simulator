@@ -111,14 +111,14 @@ class Procedurals extends States {
 
         if (this.timer.CURRENT === 0) {
             this.timer.CURRENT = 1;
-            let text = `
+            let message = `
                 <p>O primeiro passo é abrir a bolsa que contém o Equipo Cassete e desenrolar as linhas.</p>
                 <p>Clique <button id="access-door">aqui</button> para acessar a porta do compartimento do cassete e ver o procedimento.</p>
             `;
-            this.display.description("instale o equipo cassete", text);
+            this.display.description("instale o equipo cassete", message);
             let buttonAccessDoor = document.querySelector("#access-door");
             buttonAccessDoor.onclick = () => {
-                this.openDOOR();
+                this.casseteFIRST();
             };
         }
 
@@ -127,42 +127,45 @@ class Procedurals extends States {
             if (this.buttons.GO) this.timer.CURRENT = 2;
         }
 
-        if (this.timer.CURRENT >= 2 && this.timer.CURRENT < 210) {
+        if (this.timer.CURRENT >= 2 && this.timer.CURRENT) {
             this.timerON();
             this.display.live("auto teste");
 
-            let message = `
-                <p>Iniciado o Auto Teste...</p>
-                <p>Pegue a extremidade da "Linha do Dreno" e leve até o ponto de despejo (ralo do banheiro)</p>
-                <p>Nesse momento é extremamente importante que <strong>lave as mãos</strong> usando a técnica hospitalar.</p>
-                <p>Lembre-se desse importante cuidado, uma vez que será necessário o manuseio com partes sensíveis no procedimento, tais como as <strong>Bolsas de Solução</strong> e o <strong>Equipo do paciente</strong>.</p>
-            `;
-            this.display.description("homechoice auto teste", message);
-
-        }
-
-        if (this.timer.CURRENT >= 210 && this.timer.CURRENT < 9000) {
-            if (this.buttons.GO) {
-                this.goto(this.proc.BAGS);
-                this.unbufferedDisplay();
-                this.timerON();
-                this.timerRESET();
+            if (this.timer.CURRENT === 2) {
+                let message = `
+                    <p>Iniciado o Auto Teste...</p>
+                    <p>Pegue a extremidade da "Linha do Dreno" e leve até o ponto de despejo (ralo do banheiro)</p>
+                    <p>Nesse momento é extremamente importante que <strong>lave as mãos</strong> usando a técnica hospitalar.</p>
+                    <p>Lembre-se desse importante cuidado, uma vez que será necessário o manuseio com partes sensíveis no procedimento, tais como as <strong>Bolsas de Solução</strong> e o <strong>Equipo do paciente</strong>.</p>
+                `;
+                this.display.description("homechoice auto teste", message);
             }
-        }
+            if (this.timer.CURRENT === 210) {   // 1800
+                let message = `
+                    <p>Iniciado o Auto Teste...</p>
+                    <p>Pegue a extremidade da "Linha do Dreno" e leve até o ponto de despejo (ralo do banheiro)</p>
+                    <p>Nesse momento é extremamente importante que <strong>lave as mãos</strong> usando a técnica hospitalar.</p>
+                    <p>Lembre-se desse importante cuidado, uma vez que será necessário o manuseio com partes sensíveis no procedimento, tais como as <strong>Bolsas de Solução</strong> e o <strong>Equipo do paciente</strong>.</p>
+                    <br>
+                    <p>... Geralmente o Auto Teste tem uma duração de 5 minutos, mas pelo carater ilustrativo desse simulador você pode clicar <button id="access-bags">aqui</button> para continuar.</p>
+                `;
+                this.display.description("homechoice auto teste", message);
+                let buttonAccessBags = document.querySelector("#access-bags");
+                buttonAccessBags.onclick = () => {
+                    this.goto(this.proc.BAGS);
+                    this.timerON();
+                    this.timerRESET();
+                    this.unbufferedDisplay();
+                }
+            }
 
-        if (this.timer.CURRENT >= 1800) {
-            let message = `
-                <p>Geralmente o Auto Teste tem uma duração de 5 minutos</p>
-                <p>A título representativo você pode continuar apertanto o botão go</p>
-            `;
-            this.display.description("homechoice auto teste", message);
         }
 
         if (this.timer.CURRENT >= 9000) {
-                this.goto(this.proc.BAGS);
-                this.unbufferedDisplay();
-                this.timerON();
-                this.timerRESET();
+            this.goto(this.proc.BAGS);
+            this.unbufferedDisplay();
+            this.timerON();
+            this.timerRESET();
         }
         
         this.checkOptions();
@@ -178,22 +181,70 @@ class Procedurals extends States {
             this.timer.LOOP = true;
             this.timer.IN = 1;
             this.timer.OUT = 60;
+
+            let message = `
+                <p>Logo após o Auto Teste a mensagem "Conectar Bolsas" alternada com "Abrir Clamps" aparecerá no display. Isso significa que é preciso connectar as linhas do segmento do Equipo às bolsas de solução e depois retirar o clamp que foi previamente fixado.</p>
+                <p>Vamos lá, o passo a passo desse procedimento é bem simples, clique <button id="access-bag-connection">aqui</button> para acompanhar.</p> 
+            `;
+            this.display.description("conectar bolsas", message);
+            let buttonAccessBagConnection = document.querySelector("#access-bag-connection");
+            buttonAccessBagConnection.onclick = () => {
+                this.timerMemo.ON = this.timer.ON;
+                this.timerMemo.LOOP = this.timer.LOOP;
+                this.timerMemo.PAUSE = this.timer.PAUSE;
+                this.timerMemo.CURRENT = this.timer.CURRENT;
+                this.timerOFF();
+                this.timerRESET();
+                this.bagsFIRST();
+            }
         }        
         
         if (this.timer.CURRENT >= 0 && this.timer.CURRENT < 60) {
-            let message = ``;
-            this.display.description("", message);
             if (interval % 2 === 0)
                 this.display.live("conectar bolsas...");
             else
                 this.display.live("abrir clamps...");
         }
 
-        if (this.buttons.GO) {
+        if (this.timer.CURRENT > 60) {
+            this.display.live("preenchendo linhas...");
+            if (this.timer.CURRENT === 61) {
+                let message = `
+                    <p>Agora é preciso aguardo até que todas as linhas sejam preenchidas com a Solução.</p>
+                    <p>Quando todos os seguimentos estiverem preenchidos a frase no visor mudará para CONECTE-SE</p>
+                `;
+                this.display.description("preenchimento das linhas", message);
+            }
+            if (this.timer.CURRENT === 120) {
+                let message = `
+                    <p>Agora é preciso aguardo até que todas as linhas sejam preenchidas com a Solução.</p>
+                    <p>Quando todos os seguimentos estiverem preenchidos a frase no visor mudará para CONECTE-SE</p>
+                    <br>
+                    <p>Normalmente esse procedimento dura cerca de 7 minutos...</p>
+                    <p>Se preferir você pode clicar <button id="access-connect">aqui</button> para continuar.</p>
+                `;
+                this.display.description("preenchimento das linhas", message);
+                let buttonAccessConnect = document.querySelector("#access-connect");
+                buttonAccessConnect.onclick = () => {
+                    this.goto(this.proc.CONNECT);
+                    this.timerRESET();
+                    this.unbufferedDisplay();
+                }
+            }
+        }
+
+        if (this.timer.CURRENT > 12600) {
             this.goto(this.proc.CONNECT);
             this.timerRESET();
             this.unbufferedDisplay();
         }
+
+        if (this.buttons.GO && this.timer.LOOP) {
+            this.timer.LOOP = false;
+            this.timer.IN = this.timer.OUT = 0;
+            this.timer.CURRENT = 60;
+        }
+
         this.checkOptions();
         this.uncheckButtons();
     }
@@ -252,7 +303,7 @@ class Procedurals extends States {
         }
     }
 
-    openDOOR() {
+    casseteFIRST() {
         this.modules.DISPLAY = false;
         this.modules.CASSETE = true;
 
@@ -276,7 +327,7 @@ class Procedurals extends States {
                 sticker.ontouchstart = null;
                 sticker.setAttribute("draggable", "false");
                 setTimeout(() => {
-                    this.insertCASSETE();
+                    this.casseteSECOND();
                 }, 3000);
             } else {
                 let text = `
@@ -337,9 +388,10 @@ class Procedurals extends States {
         };
     }
 
-    insertCASSETE() {
-        this.panels.homeCassete.innerHTML = "";
-        this.panels.homeCassete.style.backgroundImage = 'url("./src/images/insert-cassete.png")';
+    casseteSECOND() {
+        this.modules.CASSETE = false;
+        this.modules.TUTOR = true;
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/insert-cassete.png")';
 
         let message = `
             <p>Depois de abrir a porta do compartimento certifique-se de colocar o Equipo Cassete na posição correta, como mostra a figura acima.</p>
@@ -349,12 +401,12 @@ class Procedurals extends States {
         this.display.description("compartimento do equipo cassete", message);
         let buttonAccessOrganizer = document.querySelector("#access-organizer");
         buttonAccessOrganizer.onclick = () => {
-            this.fixOrganizer();
+            this.casseteTHIRD();
         };
     }
 
-    fixOrganizer() {
-        this.panels.homeCassete.style.backgroundImage = 'url("./src/images/fix-organizer.png")';
+    casseteTHIRD() {
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/fix-organizer.png")';
 
         let message = `
             <p>Depois de instalar devidamente o Equipo Casseste, feche a porta do compartimento, lembrando de baixar a alavanca até a base e fixando o organizador em sua extensão superior, como mostrado na figura acima.</p>
@@ -368,12 +420,12 @@ class Procedurals extends States {
         this.display.description("organizador de linhas", message);
         let buttonAccessDrainExtension = document.querySelector("#access-drain-extension");
         buttonAccessDrainExtension.onclick = () => {
-            this.connectDRAIN();
+            this.cassesteFOURTH();
         }
     }
 
-    connectDRAIN() {
-        this.panels.homeCassete.style.backgroundImage = 'url("./src/images/connect-drain-extension.png")';
+    cassesteFOURTH() {
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/connect-drain-extension.png")';
 
         let message = `
             <p>Continuando a demonstração:</p>
@@ -387,12 +439,83 @@ class Procedurals extends States {
         this.display.description("extensão do dreno", message);
         let buttonAccessMainPanel = document.querySelector("#access-main-panel");
         buttonAccessMainPanel.onclick = () => {
-            this.modules.CASSETE = false;
+            this.modules.TUTOR = false;
             this.modules.DISPLAY = true;
             let message = `
                 <p>Muito bem, aperte o botão GO para continuar o procedimento.</p>
             `;
             this.display.description("painel do homechoice", message);
+        }
+    }
+
+    bagsFIRST() {
+        this.modules.DISPLAY = false;
+        this.modules.TUTOR = true;
+
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/connection--get-main-line.png")';
+
+        let message = `
+            <p>siga as seguintes instruções:</p>
+            <ul>
+                <li>- Instale o Clamp primeiro na bolsa que está no aquecedor;</li>
+                <li>- Remova do Organizador o segmento do Equipo Cassete que tem a linha Vermelha;</li>
+            </ul>
+            <br>
+            <p>Clique <button id="access-second-bag">aqui</button> para continuar.</p>
+        `;
+        this.display.description("tirar a linha do organizador", message);
+        let buttonAccessSecondBag = document.querySelector("#access-second-bag");
+        buttonAccessSecondBag.onclick = () => {
+            // this.unbufferedDisplay();
+            this.bagsSECOND();
+        }
+
+    }
+
+    bagsSECOND() {
+        this.timer.CURRENT = 3;
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/connection--main-line-connection.png")';
+
+        let message = `
+            <ul>
+                <li>- Efetue a conexão do Equipo de linha Vermelha à Bolsa de Solução que está no aquecedor;</li>
+                <li>- Instale as Bolsas adicionais no segmento do Equipo com linha Branca (não levar em consideração a linha do Dreno que também é Branca);</li>
+            </ul>
+            <p><strong>O segmento com linha Azul só deverá ser utilizado quando a concentração de glicose da última Bolsa for diferente</strong>.</p>
+            <br>
+            <p>Clique <button id="access-third-bag">aqui</button> para continuar.</p>
+        `;
+        this.display.description("conectar bolsas no equipo cassete", message);
+        let buttonAccessThirdBag = document.querySelector("#access-third-bag");
+        buttonAccessThirdBag.onclick = () => {
+            // this.unbufferedDisplay();
+            this.bagsTHIRD();
+        }
+    }
+
+    bagsTHIRD() {
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/connection--lines-connected.png")';
+
+        let message = `
+            <ul>
+                <li>- Abra os Clamps dos segmentos que estão conectados às Bolsas de Solução e à pinça da linha do paciente;</li>
+                <li>- Depois de realizar os passos anteriores retornaremos ao display e basta apertar o botão GO;</li>
+            </ul>
+            <br>
+            <p>Clique <button id="access-return-main">aqui</button> para retornar.</p>
+        `;
+        this.display.description("abrir clamps", message);
+        let buttonAccessReturn = document.querySelector("#access-return-main");
+        buttonAccessReturn.onclick = () => {
+            this.timer.ON = this.timerMemo.ON;
+            this.timer.LOOP = this.timerMemo.LOOP;
+            this.timer.PAUSE = this.timerMemo.PAUSE;
+            this.timer.CURRENT = this.timerMemo.CURRENT;
+
+            this.modules.TUTOR = false;
+            this.modules.DISPLAY = true;
+
+            this.display.description("conectar bolsas", "<p>Aperte o botão GO para continuar...");
         }
     }
 

@@ -264,9 +264,23 @@ main {
     overflow: hidden;
     border: solid .1rem hsl(from var(--back-color) h s calc(l + var(--accent-color)) /1);
     border-radius: calc(.18rem * var(--panel-scale));
-    /* background-image: url("../images/homechoice-back.png");
+    /* background-image: url("../images/homechoice-back.png");*/
     background-size: 100%;
-    background-repeat: no-repeat; */
+    background-repeat: no-repeat;
+}
+/* --------------------------------------------------------------------------------------- */
+
+/* connections */
+.control-panel .tutor {
+    width: calc(var(--panel-width) * var(--panel-scale) * 1rem);
+    height: calc(var(--panel-height) * var(--panel-scale) * 1rem);
+    flex: none;
+    overflow: hidden;
+    border: solid .1rem hsl(from var(--back-color) h s calc(l + var(--accent-color)) /1);
+    border-radius: calc(.18rem * var(--panel-scale));
+    /* background-image: url("../images/homechoice-back.png");*/
+    background-size: 100%;
+    background-repeat: no-repeat;
 }
 /* --------------------------------------------------------------------------------------- */
 
