@@ -50,6 +50,10 @@ class Timer {
         }
     }
 
+    states() {
+        return { ON: this.set.ON, PAUSE: this.set.PAUSE, LOOP: this.set.LOOP };
+    }
+
     getLoop() {
         return { in: this.set.IN, out: this.set.OUT };
     }

@@ -31,6 +31,11 @@ class Display {
                 break;
         }
     }
+
+    clear() {
+        this.display.innerHTML = "";
+        this.console.innerHTML = "";
+    }
     
     live(command, align="center") {
         this.info.command = command.trim().toUpperCase();

@@ -4,9 +4,9 @@ class HomeChoice extends States {
     #error = {
         GO: { 1: "por favor espere...", },
         STOP: { 2: "não é possível parar." },
-        ENTER: null,
-        UP: null,
-        DOWN: null,
+        ENTER: { 3: "aceddo não permitido" },
+        UP: { 4: "acesso não permitido" },
+        DOWN: { 5: "acesso não permitido" },
     };
     
     /**
@@ -115,7 +115,7 @@ class HomeChoice extends States {
                 this.goto(this.proc.CASSETE);
                 this.clock.off();
                 this.clock.reset("CURRENT");
-                this.unbufferedDisplay();
+                this.display.clear();
             }
             this.checkOptions();
         }
@@ -173,7 +173,7 @@ class HomeChoice extends States {
                     this.goto(this.proc.BAGS);
                     this.clock.save();
                     this.clock.restart();
-                    this.unbufferedDisplay();
+                    this.display.clear();
                 }
             }
 
@@ -181,7 +181,7 @@ class HomeChoice extends States {
 
         if (this.clock.current() >= 9000) {
             this.goto(this.proc.BAGS);
-            this.unbufferedDisplay();
+            this.display.clear();
             this.clock.restart();
         }
         
@@ -245,7 +245,7 @@ class HomeChoice extends States {
                     this.goto(this.proc.CONNECT);
                     this.clock.restart();
 
-                    this.unbufferedDisplay();
+                    this.display.clear();
                 }
             }
         }
@@ -253,12 +253,12 @@ class HomeChoice extends States {
         if (this.clock.current() > 12600) {
             this.goto(this.proc.CONNECT);
             this.clock.restart();
-            this.unbufferedDisplay();
+            this.display.clear();
         }
         
-        if (this.buttons.GO && !this.clock.set.LOOP) this.checkERROR("GO", 1);
+        if (this.buttons.GO && !this.clock.states().LOOP) this.checkERROR("GO", 1);
 
-        if (this.buttons.GO && this.clock.set.LOOP) {
+        if (this.buttons.GO && this.clock.states().LOOP) {
             this.clock.loop();
             this.clock.setCurrent(60);
         }
@@ -303,7 +303,7 @@ class HomeChoice extends States {
             this.clock.resetAll();
             this.clock.restart();
             this.clock.on();
-            this.unbufferedDisplay();
+            this.display.clear();
         }
 
         this.checkERROR("STOP", 2);
@@ -330,10 +330,10 @@ class HomeChoice extends States {
                     <p>Nesse intervalo é aconselhado que o paciente durma.</p>
                     <p>Se houver alguma intercortrência, como queda de energia, o sistema alertará e mostrará no visor o código do error ocorrido, caso não consiga continuar a terapia é necessário anotar, além do código de erro os demais registros da terapia.</p>
                     <br>
-                    <p>A título educativo o simulador permite que você possa seguir para a próxima etapa clicando <button id="access-procedural-finish">aqui</button>.</p>
+                    <p>A título educativo o simulador permite que você possa seguir para o término da terapia clicando <button id="access-procedural-finish">aqui</button>.</p>
                 `;
                 this.display.description("início da terapia", message);
-                let buttonAccessProceduralFinish = document.querySelector("access-procedural-finish");
+                let buttonAccessProceduralFinish = document.querySelector("#access-procedural-finish");
                 buttonAccessProceduralFinish.onclick = () => {
                     this.goto(this.proc.DISCONNECT);
                     this.clock.resetAll();
@@ -350,9 +350,89 @@ class HomeChoice extends States {
     
     infund(duration) { }
 
-    disconnect(duration) { }
+    disconnect(duration) {
+        this.clock.setDuration(duration * this.clock.framerate());
 
-    shutdown(duration) { }
+        if (this.clock.current() === 0) {
+            this.clock.pause();
+            this.display.live("termine a terapia");
+            let message = `
+                <p>Chegamos ao final da terapia, mas antes de continuar é importante verificar e anotar todas as informações dos registro da Homechoice:</p>
+                <br>
+                <ul>
+                    <li>- Aperte a Seta Azul para baixo e anote:<br><pre>   DRENAGEM INICIAL;</pre><br></li>
+                    <li>- Aperte a Seta Azul para baixo e anote:<br><pre>   ULT. DRENAG. MAN.;</pre><br></li>
+                    <li>- Aperte a Seta Azul para baixo e anote:<br><pre>   UF TOTAL;</pre><br></li>
+                    <li>- Aperte a Seta Azul para baixo e anote:<br><pre>   PERMAN. MÉDIA;</pre><br></li>
+                    <li>- Aperte a Seta Azul para baixo e anote:<br><pre>   T. PERM. GANHO;</pre><br></li>
+                    <li>- Aperte a Seta Azul para baixo e anote:<br><pre>   T. PERM. PERDIDO.</pre><br></li>
+                </ul>
+                <br>
+                <p>Após você ter revisto suas anotações aperte o botão GO (Verde).</p>
+            `;
+            this.display.description("termine a terapia", message);
+        }
+
+        if (this.clock.current() >= 1 && this.clock.current() < 60) {
+            if (this.clock.seconds() % 2 === 0) {
+                this.display.live("fechar clamps...");
+            } else {
+                this.display.live("desconecte-se");
+            }
+        }
+
+        
+        if (this.buttons.GO && this.clock.states().LOOP) {
+            this.goto(this.proc.SHUTDOWN);
+            
+            this.display.clear();
+            this.clock.resetAll();
+            this.clock.on();
+            this.clock.restart();
+        }
+
+        if (this.buttons.GO && this.clock.states().PAUSE) {
+            let message = `
+                <p>Agora você deve fechar todos os clamps das Linhas de Solução (equipo cassete homechoice) e o Twist Clamp do equipo de transferência (paciente)</p>
+                <p>Clique <button id="access-disconnect-first">aqui</button> para acompanhar o processo de desligamento</p>
+                <br>
+                <p>Se você já conhecer o procedimento e quiser continuar basta apertar o botão GO.</p>
+            `;
+            this.display.description("fechar os clamps e desconectar-se", message);
+            let buttonAccessDisconnectFirst = document.querySelector("#access-disconnect-first");
+            buttonAccessDisconnectFirst.onclick = () => {
+                this.disconnectFIRST();
+            };
+            
+            this.clock.play();
+            this.clock.loop(1, 60);
+            this.clock.on();
+        }
+
+        this.checkERROR("STOP", 2);
+        this.checkOptions();
+        this.uncheckButtons();
+    }
+
+    shutdown(duration) {
+        this.clock.setDuration(duration * this.clock.framerate());
+
+        if (this.clock.current() === 0) {
+            this.display.live("desligue-me");
+            let message = `
+                <p>Muito bem, queremos parabenizar você que chegou até aqui e concluiu com êxito mais uma sessão de terapia com a Homechoice, sabemos das dificuldades para memorizar cada passo do procedimento e por isso desenvolvemos esse sistema, para que você possa por em prática o seu conhecimento e se aperfeiçoar no seu próprio tratamento ou de seu ente querido.</p>
+                <br>
+                <p>Para finalizar clique <button id="access-power-off">aqui</button> e acesse o botão de LIGAR / DESLIGAR.</p>
+            `;
+            this.display.description("desligar o sistema", message);
+            let buttonAccessPowerOFF = document.querySelector("#access-power-off");
+            buttonAccessPowerOFF.onclick = () => {
+                homeButtonOnIMG.style.display = "";
+                homeButtonOffIMG.style.display = "none";
+                this.powerOFF();
+            };
+        }
+    }
 
     interruption(duration) { }
 
@@ -375,6 +455,33 @@ class HomeChoice extends States {
                 this.modules.POWER = false;
                 this.modules.DISPLAY = true;
                 this.power.ON = true;
+            }, 3000)
+        }
+    }
+
+    powerOFF() {
+        this.modules.DISPLAY = false;
+        this.modules.POWER = true;
+
+        let message = `
+            <p>Agora que chegamos ao final da terapia DPA (Diálise Peritonial Automática) podemos desligar o sistema.</p>
+            <br>
+            <p>Para encerrar o sistema Homechoice aperte o botão <strong>LIGAR / DESLIGAR</strong> (I/O).</p>
+        `;
+
+        this.display.description("homechoice power suply", message);
+
+        buttonPOWER.onclick = () => {
+            homeButtonOffIMG.style.display = "";
+            homeButtonOnIMG.style.display = "none";
+            setTimeout(() => {
+                this.goto(this.proc.INIT)
+                this.modules.POWER = false;
+                this.modules.DISPLAY = true;
+                this.power.ON = false;
+
+                this.clock.resetAll();
+                this.display.clear();
             }, 3000)
         }
     }
@@ -647,9 +754,72 @@ class HomeChoice extends States {
         }
     }
 
+    disconnectFIRST() {
+        this.modules.DISPLAY = false;
+        this.modules.TUTOR = true;
+
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/patient--wash-hands.png")';
+
+        let message = `
+            <p>Para a desconexão do paciente é importante lembrar de colocar a máscara e lavar as mãos com técnica hospitalar.</p>
+            <br>
+            <p>Clique <button id="access-disconnect-second">aqui</button> e continue.</p>
+        `;
+        this.display.description("desconectando o paciente", message);
+        let buttonAccessDisconnectSecond = document.querySelector("#access-disconnect-second");
+        buttonAccessDisconnectSecond.onclick = () => {
+            this.disconnectSECOND();
+        };
+    }
+
+    disconnectSECOND() {
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/disconnect-cap.png")';
+
+        let message = `
+            <p>Abra a embalagem do novo Protetor de desconexão (MiniCap) e verifique a integridade.</p>
+            <br>
+            <p>Clique <button id="access-disconnect-third">aqui</button> e continue.</p>
+        `;
+        this.display.description("desconectando o paciente", message);
+        let buttonAccessDisconnectSecond = document.querySelector("#access-disconnect-third");
+        buttonAccessDisconnectSecond.onclick = () => {
+            this.disconnectTHIRD();
+        };
+    }
+
+    disconnectTHIRD() {
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/disconnect-equipo.png")';
+
+        let message = `
+            <p>agora seguiremos os seguintes passos:</p>
+            <br>
+            <ul>
+                <li>- Cheque se todas as pinças estão fechadas, incluindo o "Twist Clamp" do "Equipo do Transferência" (paciente);</li>
+                <li>- Desconecte o "Equipo de Transferência" (paciente) da linha do paciente do "Equipo Cassete" (Homechoice);</li>
+                <li>- Instale imediatamente o protetor de desconexão (MiniCap) no Equipo de Transferência (paciente);</li>
+                <li>- Abra a porta do compartimento do Equipo Cassete empurrando a alavanca para cima;</li>
+                <li>- Retire o Equipo Cassete do sistema e despreze;</li>
+                <li>- Descarte todas as bolsa de solução conforme as normas de segurança sanitária;</li>
+            </ul>
+            <br>
+            <p>Clique <button id="access-disconnect-return">aqui</button> retornar ao procedimento.</p>
+        `;
+        this.display.description("desconectando o paciente", message);
+        let buttonAccessDisconnectReturn = document.querySelector("#access-disconnect-return");
+        buttonAccessDisconnectReturn.onclick = () => {
+            this.modules.TUTOR = false;
+            this.modules.DISPLAY = true;
+            
+            let message = `
+                <p>Agora que você desconectou o paciente e retirou os descartes pode prosseguir para a etapa de desligamento apertando o botão GO.</p>
+            `;
+            this.display.description("fechar os clamps e desconectar-se", message);
+        };
+    }
+
     options(duration) {
-        let title = this.menu[this.index].title + ":";
-        let value = this.menu[this.index].value().toString();
+        let title = this.results[this.index].title + ":";
+        let value = this.results[this.index].value.toString();
         let spaces = 22 - (title.length + value.length);
 
         let text = title + " ".repeat(spaces) + value;
@@ -660,6 +830,7 @@ class HomeChoice extends States {
         }
         
         if (this.buttons.UP) {
+            if (this.index === 0) this.buttons.STOP = true;
             this.clock.setCurrent(0);
             this.index -= 1;
         }
@@ -669,7 +840,7 @@ class HomeChoice extends States {
             this.index += 1;
         }
     
-        this.index = this.index < 0 ? this.menu.length - 1 : this.index > this.menu.length - 1 ? 0 : this.index;
+        this.index = this.index < 0 ? 0 : this.index > this.menu.length - 1 ? this.menu.length - 1 : this.index;
 
         this.uncheckOptions();
         this.uncheckButtons();
@@ -685,12 +856,19 @@ class HomeChoice extends States {
     }
 
     checkOptions() {
-        if (this.buttons.ENTER || this.buttons.UP || this.buttons.DOWN) {
+        if (this.buttons.ENTER || this.buttons.DOWN) {
             this.memory.process = this.process;
             this.process = this.proc.OPTIONS;
 
-            this.clock.save();
+            this.results = [];
+            for (let item of this.menu) {
+                this.results.push(
+                    { title: item.title, value: item.value() }
+                );
+            }
 
+            this.display.save();
+            this.clock.save();
             this.clock.resetAll();
             this.clock.off();
         }
@@ -699,6 +877,7 @@ class HomeChoice extends States {
     uncheckOptions() {
         if (this.buttons.STOP) {
             this.process = this.memory.process;
+            this.display.load("command");
             this.clock.load();
         }
     }
