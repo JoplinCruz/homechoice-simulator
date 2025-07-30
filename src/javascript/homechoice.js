@@ -1,31 +1,46 @@
 
-class Procedurals extends States {
-    constructor(display, panels) {
+class HomeChoice extends States {
+
+    #error = {
+        GO: { 1: "por favor espere...", },
+        STOP: { 2: "não é possível parar." },
+        ENTER: null,
+        UP: null,
+        DOWN: null,
+    };
+    
+    /**
+     * 
+     * @param {Display} display 
+     * @param {{ homePanel, homePower, homeCassete, homeConnections, homeTutor }} panels 
+     * @param {Timer} clock 
+     */
+    constructor(display, panels, clock) {
         super();
         this.display = display;
         this.panels = panels;
+        this.clock = clock;
         this.process = this.proc.INIT;
-        this.processMemo = null;
-        this.descriptionMemo = null;
-        this.timerMemo = {
-            CURRENT: null,
-            ON: null,
-            LOOP: null,
-            PAUSE: null,
-        }
+        this.memory = {
+            process: null,
+            error: { origin: null, code: null },
+        };
         this.menu = [
-            "option #1",
-            "option #2",
-            "option #3",
+            { title: "drenagem inicial", value: () => { return 2000 + (Math.random() * 600) >> 0; } },
+            { title: "ult. drenag. man.", value:() => { return 2000 + (Math.random() * 600) >> 0; } },
+            { title: "uf total", value: () => { return 1000 + (Math.random() * 600) >> 0; } },
+            { title: "perman. média", value: () => { return (7 * 60) + (Math.random() * 120) >> 0; } },
+            { title: "t. perm. perdido", value: () => { return 1000 + (Math.random() * 600) >> 0; } },
+            { title: "t. perm. ganho", value: () => { return 1000 + (Math.random() * 600) >> 0; } },
         ]
         this.index = 0;
     }
 
     init(duration) {
-        this.timer.DURATION = duration * this.fps;
+        this.clock.setDuration(duration * this.clock.framerate());
 
-        if (this.timer.CURRENT === 0) {
-            this.timer.CURRENT = 1;
+        if (this.clock.current() === 0) {
+            this.clock.setCurrent(1);
             let message = `
                 <p>Antes de iniciar reúna todo material necessário para o DPA:</p>
                 <br>
@@ -53,16 +68,17 @@ class Procedurals extends States {
         if (this.power.ON) {
             this.process = this.proc.STARTUP;
             this.power.INIT = true;
-            this.enableTimer();
+            this.clock.on();
+            this.clock.restart();
         }
 
         this.uncheckButtons();
     }
 
     start(duration) {
-        this.timer.DURATION = duration * this.fps;
+        this.clock.setDuration(duration * this.clock.framerate());
 
-        if (this.timer.CURRENT === 0) {
+        if (this.clock.current() === 0) {
             this.display.live(""); 
             let text = `
                 <p>Inicializando o sistema...</p>
@@ -72,19 +88,19 @@ class Procedurals extends States {
             this.display.description("homechoice", text);    
         }
 
-        if (this.timer.CURRENT === 3)
+        if (this.clock.current() === 3)
             this.display.live("█", "left");
 
-        if (this.timer.CURRENT === 15)
+        if (this.clock.current() === 15)
             this.display.live("██████████████████████");
 
-        if (this.timer.CURRENT === 90)
+        if (this.clock.current() === 90)
             this.display.live("");
 
-        if (this.timer.CURRENT === 120)
+        if (this.clock.current() === 120)
             this.display.live("por favor espere...");
 
-        if (this.timer.CURRENT >= 210) {
+        if (this.clock.current() >= 210) {
             this.display.live("aperte go p/ iniciar");
             let text = `
                 <p>Pressione o botão GO para continuar...</p>
@@ -92,12 +108,13 @@ class Procedurals extends States {
             this.display.description("homechoice", text);
         }
 
-        if (this.timer.CURRENT < 210) this.checkERROR("GO", 1);
+        if (this.clock.current() < 210) this.checkERROR("GO", 1);
         
-        if (this.timer.CURRENT >= 210) {
+        if (this.clock.current() >= 210) {
             if (this.buttons.GO) {
                 this.goto(this.proc.CASSETE);
-                this.timerOFF();
+                this.clock.off();
+                this.clock.reset("CURRENT");
                 this.unbufferedDisplay();
             }
             this.checkOptions();
@@ -107,10 +124,10 @@ class Procedurals extends States {
     }
 
     cassete(duration) {
-        this.timer.DURATION = duration * this.fps;
+        this.clock.setDuration(duration * this.clock.framerate());
 
-        if (this.timer.CURRENT === 0) {
-            this.timer.CURRENT = 1;
+        if (this.clock.current() === 0) {
+            this.clock.setCurrent(1);
             let message = `
                 <p>O primeiro passo é abrir a bolsa que contém o Equipo Cassete e desenrolar as linhas.</p>
                 <p>Clique <button id="access-door">aqui</button> para acessar a porta do compartimento do cassete e ver o procedimento.</p>
@@ -122,16 +139,17 @@ class Procedurals extends States {
             };
         }
 
-        if (this.timer.CURRENT === 1) {
+        if (this.clock.current() === 1) {
             this.display.live("inserir cassete");
-            if (this.buttons.GO) this.timer.CURRENT = 2;
+            if (this.buttons.GO) this.clock.setCurrent(2);
+            this.uncheckButtons();
         }
 
-        if (this.timer.CURRENT >= 2 && this.timer.CURRENT) {
-            this.timerON();
+        if (this.clock.current() >= 2) {
+            this.clock.on();
             this.display.live("auto teste");
 
-            if (this.timer.CURRENT === 2) {
+            if (this.clock.current() === 2) {
                 let message = `
                     <p>Iniciado o Auto Teste...</p>
                     <p>Pegue a extremidade da "Linha do Dreno" e leve até o ponto de despejo (ralo do banheiro)</p>
@@ -140,7 +158,7 @@ class Procedurals extends States {
                 `;
                 this.display.description("homechoice auto teste", message);
             }
-            if (this.timer.CURRENT === 210) {   // 1800
+            if (this.clock.current() === 210) {   // 1800
                 let message = `
                     <p>Iniciado o Auto Teste...</p>
                     <p>Pegue a extremidade da "Linha do Dreno" e leve até o ponto de despejo (ralo do banheiro)</p>
@@ -153,34 +171,32 @@ class Procedurals extends States {
                 let buttonAccessBags = document.querySelector("#access-bags");
                 buttonAccessBags.onclick = () => {
                     this.goto(this.proc.BAGS);
-                    this.timerON();
-                    this.timerRESET();
+                    this.clock.save();
+                    this.clock.restart();
                     this.unbufferedDisplay();
                 }
             }
 
         }
 
-        if (this.timer.CURRENT >= 9000) {
+        if (this.clock.current() >= 9000) {
             this.goto(this.proc.BAGS);
             this.unbufferedDisplay();
-            this.timerON();
-            this.timerRESET();
+            this.clock.restart();
         }
         
-        this.checkOptions();
+        if (this.clock.current() !== 1) this.checkERROR("GO", 1);
+        this.checkERROR("STOP", 2);
         this.uncheckButtons();
     }
 
     bags(duration) {
-        this.timer.DURATION = duration * this.fps;
+        this.clock.setDuration(duration * this.clock.framerate());
 
-        let interval = (this.timer.CURRENT / this.fps) >> 0;
+        let seconds = this.clock.seconds();
 
-        if (this.timer.CURRENT === 0) {
-            this.timer.LOOP = true;
-            this.timer.IN = 1;
-            this.timer.OUT = 60;
+        if (this.clock.current() === 0) {
+            this.clock.loop(1, 60);
 
             let message = `
                 <p>Logo após o Auto Teste a mensagem "Conectar Bolsas" alternada com "Abrir Clamps" aparecerá no display. Isso significa que é preciso connectar as linhas do segmento do Equipo às bolsas de solução e depois retirar o clamp que foi previamente fixado.</p>
@@ -189,33 +205,33 @@ class Procedurals extends States {
             this.display.description("conectar bolsas", message);
             let buttonAccessBagConnection = document.querySelector("#access-bag-connection");
             buttonAccessBagConnection.onclick = () => {
-                this.timerMemo.ON = this.timer.ON;
-                this.timerMemo.LOOP = this.timer.LOOP;
-                this.timerMemo.PAUSE = this.timer.PAUSE;
-                this.timerMemo.CURRENT = this.timer.CURRENT;
-                this.timerOFF();
-                this.timerRESET();
+
+                this.clock.save();
+                this.clock.resetAll();
+                this.clock.restart();
+                this.clock.off();
+                
                 this.bagsFIRST();
             }
         }        
         
-        if (this.timer.CURRENT >= 0 && this.timer.CURRENT < 60) {
-            if (interval % 2 === 0)
+        if (this.clock.current() >= 0 && this.clock.current() < 60) {
+            if (seconds % 2 === 0)
                 this.display.live("conectar bolsas...");
             else
                 this.display.live("abrir clamps...");
         }
 
-        if (this.timer.CURRENT > 60) {
+        if (this.clock.current() > 60) {
             this.display.live("preenchendo linhas...");
-            if (this.timer.CURRENT === 61) {
+            if (this.clock.current() === 61) {
                 let message = `
                     <p>Agora é preciso aguardo até que todas as linhas sejam preenchidas com a Solução.</p>
                     <p>Quando todos os seguimentos estiverem preenchidos a frase no visor mudará para CONECTE-SE</p>
                 `;
                 this.display.description("preenchimento das linhas", message);
             }
-            if (this.timer.CURRENT === 120) {
+            if (this.clock.current() === 210) {
                 let message = `
                     <p>Agora é preciso aguardo até que todas as linhas sejam preenchidas com a Solução.</p>
                     <p>Quando todos os seguimentos estiverem preenchidos a frase no visor mudará para CONECTE-SE</p>
@@ -227,58 +243,118 @@ class Procedurals extends States {
                 let buttonAccessConnect = document.querySelector("#access-connect");
                 buttonAccessConnect.onclick = () => {
                     this.goto(this.proc.CONNECT);
-                    this.timerRESET();
+                    this.clock.restart();
+
                     this.unbufferedDisplay();
                 }
             }
         }
 
-        if (this.timer.CURRENT > 12600) {
+        if (this.clock.current() > 12600) {
             this.goto(this.proc.CONNECT);
-            this.timerRESET();
+            this.clock.restart();
             this.unbufferedDisplay();
         }
+        
+        if (this.buttons.GO && !this.clock.set.LOOP) this.checkERROR("GO", 1);
 
-        if (this.buttons.GO && this.timer.LOOP) {
-            this.timer.LOOP = false;
-            this.timer.IN = this.timer.OUT = 0;
-            this.timer.CURRENT = 60;
+        if (this.buttons.GO && this.clock.set.LOOP) {
+            this.clock.loop();
+            this.clock.setCurrent(60);
         }
 
-        this.checkOptions();
+        this.checkERROR("STOP", 2);
         this.uncheckButtons();
     }
 
-    connect(duration) { 
-        if (this.timer.CURRENT >= 0) this.display.live("conecte-se");
-        if (this.timer.CURRENT === 30) this.timer.PAUSE = true;
+    connect(duration) {
+
+        let seconds = this.clock.seconds();
+
+        if (this.clock.current() >= 0) {
+            if (seconds % 2 === 0) {
+                this.display.live("conecte-se...");
+            } else {
+                this.display.live("verificar linha...")
+            }
+                
+            if (this.clock.current() === 0) {
+                let message = `
+                    <p>A Homechoice já está pronta para começar a DPA (Diálise Peritonial Automatizada), agora é só conectar com o paciente...</p>
+                    <p>Mas espere um momento, antes de fazer isso vamos conferir o passo a passo.</p>
+                    <p>Uma boa prática é sempre verificar se a Linha do Paciente está preenchida.</p>
+                    <p>Clique <button id="access-patient-first">aqui</button> para acompanhar o procedimento...</p>
+                `;
+
+                this.display.description("conectar o paciente ao sistema", message);
+                
+                let buttonAccessConnectToPatient = document.querySelector("#access-patient-first");
+                buttonAccessConnectToPatient.onclick = () => {
+                    this.clock.save();
+                    this.clock.off();
+                    this.clock.restart();
+                    this.patientFIRST();
+                }
+            }
+        }
 
         if (this.buttons.GO) {
-            this.goto(this.proc.DISCONNECT);
-            this.timerOFF();
+            this.goto(this.proc.DRAIN);
+            this.clock.resetAll();
+            this.clock.restart();
+            this.clock.on();
             this.unbufferedDisplay();
         }
-        this.checkOptions();
+
+        this.checkERROR("STOP", 2);
         this.uncheckButtons();
     }
 
-    disconnect(duration) { }
+    drain(duration) {
+        this.clock.setDuration(duration * this.clock.framerate);
 
-    drain(duration) { }
+        if (this.clock.current() >= 0) {
+            this.display.live("drenagem inicial");
+            if (this.clock.current() === 0) {
+                let message = `
+                    <p>A terapia DPA (Diálise Peritonial Automatizada) iniciou e terminará em aproximadamente 8 horas.</p>
+                    <p>Nesse intervalo é aconselhado que o paciente durma.</p>
+                    <p>Se houver alguma intercortrência, como queda de energia, o sistema alertará e mostrará no visor o código do error ocorrido, caso não consiga continuar a terapia é necessário anotar, além do código de erro os demais registros da terapia.</p>
+                `;
+                this.display.description("início da terapia", message);
+            }
 
+            if (this.clock.current() === 210) {
+                let message = `
+                    <p>A terapia DPA (Diálise Peritonial Automatizada) iniciou e terminará em aproximadamente 8 horas.</p>
+                    <p>Nesse intervalo é aconselhado que o paciente durma.</p>
+                    <p>Se houver alguma intercortrência, como queda de energia, o sistema alertará e mostrará no visor o código do error ocorrido, caso não consiga continuar a terapia é necessário anotar, além do código de erro os demais registros da terapia.</p>
+                    <br>
+                    <p>A título educativo o simulador permite que você possa seguir para a próxima etapa clicando <button id="access-procedural-finish">aqui</button>.</p>
+                `;
+                this.display.description("início da terapia", message);
+                let buttonAccessProceduralFinish = document.querySelector("access-procedural-finish");
+                buttonAccessProceduralFinish.onclick = () => {
+                    this.goto(this.proc.DISCONNECT);
+                    this.clock.resetAll();
+                    this.clock.on();
+                    this.clock.restart();
+                };
+            }
+        }
+        
+        this.checkERROR("GO", 1);
+        this.checkERROR("STOP", 2);
+        this.uncheckButtons();
+    }
+    
     infund(duration) { }
 
-    clamp(duration) { }
-
-    unclamp(duration) { }
+    disconnect(duration) { }
 
     shutdown(duration) { }
 
     interruption(duration) { }
-
-    treatment() {
-        return this.process;
-    }
 
     powerON() {
         this.modules.DISPLAY = false;
@@ -312,7 +388,7 @@ class Procedurals extends States {
         let sticker = document.querySelector("#sticker");
 
         let message = `
-            <p>Puxe a alavanca até o topo da porta para abrir o compartimento do Equipo Cassete.</p>
+            <p>Mova a alavanca até o topo da porta para abrir o compartimento do Equipo Cassete.</p>
         `;
         
         this.display.description("porta do compartimento do cassete", message);
@@ -347,7 +423,7 @@ class Procedurals extends States {
                 touchMoveEvent.preventDefault();
 
                 let touchX = pageX - touchMoveEvent.touches[0].clientX,
-                    touchY = pageY - touchMoveEvent; touches[0].clientY;
+                    touchY = pageY - touchMoveEvent.touches[0].clientY;
                 
                 let touchTop = sticker.offsetTop - touchY, toucheLeft = sticker.offsetLeft - touchX;
                 touchTop = touchTop >= (35 * panelScale) ? (35 * panelScale) : touchTop <= -(45 * panelScale) ? -(45 * panelScale) : touchTop;
@@ -377,7 +453,6 @@ class Procedurals extends States {
                 top = top >= (35 * panelScale) ? (35 * panelScale) : top <= -(45 * panelScale) ? -(45 * panelScale) : top;
 
                 sticker.style.top = top + "px";
-                // sticker.style.left = (sticker.offsetLeft - x) + "px";
 
                 rootStyles.style.setProperty("--sticker-rotation", -((top - (35 * panelScale)) * .1) + "deg");
             };
@@ -409,13 +484,13 @@ class Procedurals extends States {
         this.panels.homeTutor.style.backgroundImage = 'url("./src/images/fix-organizer.png")';
 
         let message = `
-            <p>Depois de instalar devidamente o Equipo Casseste, feche a porta do compartimento, lembrando de baixar a alavanca até a base e fixando o organizador em sua extensão superior, como mostrado na figura acima.</p>
+            <p>Depois de instalar devidamente o Equipo Casseste, feche a porta do compartimento, lembrando de baixar a alavanca até a base, depois fixe o organizador em sua extensão superior, como mostrado na figura acima.</p>
             <p>Abra a embalagem que contém a extensão do Dreno e proceda da seguinte forma:</p>
             <ul>
                 <li>- Pegue a "Linha do Dreno", ela é a linha branca do orgtanizador que contém o tampo chato e fica do lado direito;</li>
                 <li>- Retire o tampo da "Linha do Dreno";</li>
             </ul>
-            <p>Em seguida clique <button id="access-drain-extension">aqui</button> para continuar...</p>
+            <p>Clique <button id="access-drain-extension">aqui</button> para continuar...</p>
         `;
         this.display.description("organizador de linhas", message);
         let buttonAccessDrainExtension = document.querySelector("#access-drain-extension");
@@ -466,14 +541,13 @@ class Procedurals extends States {
         this.display.description("tirar a linha do organizador", message);
         let buttonAccessSecondBag = document.querySelector("#access-second-bag");
         buttonAccessSecondBag.onclick = () => {
-            // this.unbufferedDisplay();
             this.bagsSECOND();
         }
 
     }
 
     bagsSECOND() {
-        this.timer.CURRENT = 3;
+        this.clock.setCurrent(3);
         this.panels.homeTutor.style.backgroundImage = 'url("./src/images/connection--main-line-connection.png")';
 
         let message = `
@@ -488,7 +562,6 @@ class Procedurals extends States {
         this.display.description("conectar bolsas no equipo cassete", message);
         let buttonAccessThirdBag = document.querySelector("#access-third-bag");
         buttonAccessThirdBag.onclick = () => {
-            // this.unbufferedDisplay();
             this.bagsTHIRD();
         }
     }
@@ -507,10 +580,7 @@ class Procedurals extends States {
         this.display.description("abrir clamps", message);
         let buttonAccessReturn = document.querySelector("#access-return-main");
         buttonAccessReturn.onclick = () => {
-            this.timer.ON = this.timerMemo.ON;
-            this.timer.LOOP = this.timerMemo.LOOP;
-            this.timer.PAUSE = this.timerMemo.PAUSE;
-            this.timer.CURRENT = this.timerMemo.CURRENT;
+            this.clock.load();
 
             this.modules.TUTOR = false;
             this.modules.DISPLAY = true;
@@ -519,14 +589,83 @@ class Procedurals extends States {
         }
     }
 
+    patientFIRST() {
+        this.modules.DISPLAY = false;
+        this.modules.TUTOR = true;
+
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/patient--get-out.png")';
+
+        let message = `
+            <ul>
+                <li>- Deixe o Equipo de transferência fora da veste do paciente;</li>
+                <li>- Certifique-se de que o "Twist Clamp" esteja fechado.</li>
+            </ul>
+            <p>Clique <button id="access-patient-second">aqui</button> para continuar.</p>
+        `;
+        this.display.description("preparar o equipo de transferência", message);
+        let buttonAccessPatientSecond = document.querySelector("#access-patient-second", message);
+        buttonAccessPatientSecond.onclick = () => {
+            this.patientSECOND();
+        }
+    }
+
+    patientSECOND() {
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/patient--wash-hands.png")';
+
+        let message = `
+            <ul>
+                <li>- Mantenha a máscar (essa medida deve ser adotada durante todo o processo);</li>
+                <li>- Lave as mãos novamente com água e sabão seguindo a técnica hospitalar (e sempre que tocar em superfície não estéril).</li>
+            </ul>
+            <p>Clique <button id="access-patient-third">aqui</button> para continuar.</p>
+        `;
+        this.display.description("manter a máscara e lavar as mãos", message);
+        let buttonAccessPatientThird = document.querySelector("#access-patient-third");
+        buttonAccessPatientThird.onclick = () => {
+            this.patientTHIRD();
+        }
+    }
+
+    patientTHIRD() {
+        this.panels.homeTutor.style.backgroundImage = 'url("./src/images/patient--connect-line.png")';
+
+        let message = `
+            <ul>
+                <li>- Conecte a Linha do Paciente ao Equipo de Transferência.</li>
+            </ul>
+            <p>Após a conexão você deve abrir a pinça do Equipo de Transferência (Equipo do Homecholice) e certificar-se que o "Twist Clamp" (Equipo do paciente) esteja aberto.</p>
+            <br>
+            <p>Clique <button id="access-return-connect">aqui</button> para continuar.</p>
+        `;
+        this.display.description("connectar a linha do paciente ao equipo de transferência", message);
+        let buttonAccessReturnConnect = document.querySelector("#access-return-connect");
+        buttonAccessReturnConnect.onclick = () => {
+            this.clock.load();
+            this.modules.TUTOR = false;
+            this.modules.DISPLAY = true;
+            this.display.description("conectar o paciente ao sistema", "<p>Muito bem agora aperte o botão GO para dar início ao DPA.</p>");
+        }
+    }
+
     options(duration) {
-        this.display.live(this.menu[this.index]);
+        let title = this.menu[this.index].title + ":";
+        let value = this.menu[this.index].value().toString();
+        let spaces = 22 - (title.length + value.length);
+
+        let text = title + " ".repeat(spaces) + value;
+        
+        if (this.clock.current() === 0) {
+            this.clock.setCurrent(1);
+            this.display.live(text);
+        }
         
         if (this.buttons.UP) {
+            this.clock.setCurrent(0);
             this.index -= 1;
         }
 
         if (this.buttons.DOWN) {
+            this.clock.setCurrent(0);
             this.index += 1;
         }
     
@@ -534,16 +673,6 @@ class Procedurals extends States {
 
         this.uncheckOptions();
         this.uncheckButtons();
-    }
-
-    enableTimer() {
-        this.timer.ON = true;
-        this.timer.CURRENT = this.timer.START;
-    }
-
-    disableTimer() {
-        this.timer.ON = false;
-        this.timer.DURATION = 0;
     }
 
     getPressedButton() {
@@ -557,48 +686,29 @@ class Procedurals extends States {
 
     checkOptions() {
         if (this.buttons.ENTER || this.buttons.UP || this.buttons.DOWN) {
-            this.processMemo = this.process;
+            this.memory.process = this.process;
             this.process = this.proc.OPTIONS;
 
-            for (let memo in this.timerMemo) this.timerMemo[memo] = this.timer[memo];
-            
-            this.timer.ON = true;
-            this.timer.LOOP = false;
-            this.timer.PAUSE = false;
-            this.timer.CURRENT = this.timer.START;
+            this.clock.save();
+
+            this.clock.resetAll();
+            this.clock.off();
         }
     }
 
     uncheckOptions() {
         if (this.buttons.STOP) {
-            this.process = this.processMemo;
-            for (let memo in this.timerMemo) this.timer[memo] = this.timerMemo[memo];
+            this.process = this.memory.process;
+            this.clock.load();
         }
+    }
+
+    getProcess() {
+        return this.process;
     }
 
     goto(process) {
         this.process = process;
-    }
-
-    timerRESET() {
-        this.timer.CURRENT = this.timer.START;
-    }
-
-    timerON() {
-        this.timer.ON = true;
-    }
-
-    timerOFF() {
-        this.timer.ON = false;
-        this.timer.CURRENT = 0;
-    }
-
-    pauseON() {
-        this.timer.PAUSE = true;
-    }
-
-    pauseOFF() {
-        this.timer.PAUSE = false;
     }
 
     unbufferedDisplay() {
@@ -606,7 +716,36 @@ class Procedurals extends States {
         this.display.description("", "");
     }
 
-    checkERROR(button, error) {
-        if (button === this.getPressedButton()) console.error(error);
+    error(duration) {
+        duration = duration ?? 2;
+        this.clock.setDuration(duration * this.clock.framerate());
+
+        if (this.clock.current() === 0)
+            this.display.live(this.#error[this.memory.error.origin][this.memory.error.code]);
+
+        if (this.clock.current() === this.clock.getDuration()) {
+            this.goto(this.memory.process);
+            this.clock.load();
+            this.display.load("command");
+        }
+    }
+
+    checkERROR(button, code) {
+        if (this.buttons[button]) {
+            this.uncheckButtons();
+
+            this.display.save();
+
+            this.clock.save();
+            this.clock.resetAll();
+            this.clock.restart();
+            this.clock.on();
+            
+            this.memory.process = this.getProcess();
+            this.memory.error.origin = button;
+            this.memory.error.code = code;
+
+            this.goto(this.proc.ERROR);
+        }
     }
 }

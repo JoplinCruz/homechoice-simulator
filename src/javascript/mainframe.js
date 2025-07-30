@@ -20,13 +20,15 @@ const buttonPOWER = document.querySelector("#on-off")
 
 homeButtonOnIMG.style.display = "none";
 
+const timer = new Timer();
 const display = new Display(
     homeDisplay,
     homeConsole
 );
-const procedurals = new Procedurals(
+const homechoice = new HomeChoice(
     display,
-    { homePanel, homePower, homeCassete, homeConnections, homeTutor }
+    { homePanel, homePower, homeCassete, homeConnections, homeTutor },
+    timer
 );
 
 function pressButton(event) {
@@ -34,19 +36,19 @@ function pressButton(event) {
 
     switch (button) {
         case "go":
-            procedurals.buttons.GO = true;
+            homechoice.buttons.GO = true;
             break;
         case "stop":
-            procedurals.buttons.STOP = true;
+            homechoice.buttons.STOP = true;
             break;
         case "enter":
-            procedurals.buttons.ENTER = true;
+            homechoice.buttons.ENTER = true;
             break;
         case "arrow-up":
-            procedurals.buttons.UP = true;
+            homechoice.buttons.UP = true;
             break;
         case "arrow-down":
-            procedurals.buttons.DOWN = true;
+            homechoice.buttons.DOWN = true;
             break;
         case _:
             break;
@@ -60,7 +62,7 @@ function activeButtons() {
     buttonUP.addEventListener("click", pressButton);
     buttonDOWN.addEventListener("click", pressButton);
 
-    procedurals.power.INIT = true;
+    homechoice.power.INIT = true;
 }
 
 function deactiveButtons() {
@@ -70,77 +72,82 @@ function deactiveButtons() {
     buttonUP.removeEventListener("click", pressButton);
     buttonDOWN.removeEventListener("click", pressButton);
 
-    procedurals.power.INIT = false;
+    homechoice.power.INIT = false;
 }
 
 function running() {
-    procedurals.intervals.ID = setInterval(mainframe, 1000 / procedurals.fps);
+    homechoice.intervals.ID = setInterval(mainframe, 1000 / homechoice.fps);
 }
 
 function breaking() {
     deactiveButtons();
-    clearInterval(procedurals.intervals.ID);
+    clearInterval(homechoice.intervals.ID);
 }
 
 function mainframe() {
 
-    if (procedurals.timer.ON && !procedurals.timer.PAUSE) procedurals.timer.CURRENT++;
+    if (timer.set.ON && !timer.set.PAUSE) timer.increase();
 
-    homePanel.style.display = procedurals.modules.DISPLAY ? "" : "none";
-    homePower.style.display = procedurals.modules.POWER ? "" : "none";
-    homeCassete.style.display = procedurals.modules.CASSETE ? "" : "none";
-    homeConnections.style.display = procedurals.modules.CONNECTIONS ? "" : "none";
-    homeTutor.style.display = procedurals.modules.TUTOR ? "" : "none";
+    homePanel.style.display = homechoice.modules.DISPLAY ? "" : "none";
+    homePower.style.display = homechoice.modules.POWER ? "" : "none";
+    homeCassete.style.display = homechoice.modules.CASSETE ? "" : "none";
+    homeConnections.style.display = homechoice.modules.CONNECTIONS ? "" : "none";
+    homeTutor.style.display = homechoice.modules.TUTOR ? "" : "none";
     
-    if (procedurals.power.ON) {
-        if (!procedurals.power.INIT) {
+    if (homechoice.power.ON) {
+        if (!homechoice.power.INIT) {
             activeButtons();
         }
     }
-    if (!procedurals.power.ON && procedurals.power.INIT) deactiveButtons();
+    if (!homechoice.power.ON && homechoice.power.INIT) deactiveButtons();
 
-    switch (procedurals.treatment()) {
-        case procedurals.proc.INIT:
-            procedurals.init();
+    switch (homechoice.getProcess()) {
+        case homechoice.proc.INIT:
+            homechoice.init();
             break;
-        case procedurals.proc.STARTUP:
-            procedurals.start();
+        case homechoice.proc.STARTUP:
+            homechoice.start();
             break;
-        case procedurals.proc.CASSETE:
-            procedurals.cassete()
+        case homechoice.proc.CASSETE:
+            homechoice.cassete()
             break;
-        case procedurals.proc.BAGS:
-            procedurals.bags();
+        case homechoice.proc.BAGS:
+            homechoice.bags();
             break;
-        case procedurals.proc.CONNECT:
-            procedurals.connect();
+        case homechoice.proc.CONNECT:
+            homechoice.connect();
             break;
-        case procedurals.proc.DRAIN:
-            procedurals.drain();
+        case homechoice.proc.DRAIN:
+            homechoice.drain();
             break;
-        case procedurals.proc.INFUND:
-            procedurals.infund();
+        case homechoice.proc.INFUND:
+            homechoice.infund();
             break;
-        case procedurals.proc.SHUTDOWN:
-            procedurals.shutdown();
+        case homechoice.proc.DISCONNECT:
+            homechoice.disconnect();
             break;
-        case procedurals.proc.OPTIONS:
-            procedurals.options();
+        case homechoice.proc.SHUTDOWN:
+            homechoice.shutdown();
             break;
-        case procedurals.proc.INTERRUPTION:
-            procedurals.interruption();
+        case homechoice.proc.OPTIONS:
+            homechoice.options();
+            break;
+        case homechoice.proc.INTERRUPTION:
+            homechoice.interruption();
+            break;
+        case homechoice.proc.ERROR:
+            homechoice.error();
             break;
     }
 
-    if (procedurals.timer.ON) {
-        if (procedurals.timer.LOOP) {
-            procedurals.timer.DURATION = procedurals.timer.DURATION < procedurals.timer.OUT ? procedurals.timer.OUT : procedurals.timer.DURATION;
-            procedurals.timer.CURRENT = procedurals.timer.CURRENT === procedurals.timer.OUT ? procedurals.timer.IN : procedurals.timer.CURRENT;
+    if (timer.set.ON) {
+        if (timer.set.LOOP) {
+            timer.setDuration(timer.getDuration() < timer.getLoop().out ? timer.getLoop().out : timer.getDuration());
+            timer.setCurrent(timer.current() === timer.getLoop().out ? timer.getLoop().in : timer.current());
         }
-        if (procedurals.timer.CURRENT < procedurals.timer.DURATION) procedurals.timer.ON = true;
-        if (procedurals.timer.CURRENT >= procedurals.timer.DURATION) {
-            procedurals.timer.ON = false;
-            procedurals.timer.CURRENT = procedurals.timer.START;
+        if (timer.current() > timer.getDuration()) {
+            timer.off();
+            timer.restart();
         }
     }
 }

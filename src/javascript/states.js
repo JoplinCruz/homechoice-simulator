@@ -13,16 +13,6 @@ class States {
 
     power = { ON: false, INIT: false };
     intervals = { ID: null };
-    timer = {
-        START: -1,
-        CURRENT: 0,
-        DURATION: 0,
-        ON: false,
-        PAUSE: false,
-        LOOP: false,
-        IN: 0,
-        OUT: 0,
-    }
 
     proc = {
         INIT: 0,
@@ -30,14 +20,13 @@ class States {
         CASSETE: 2,
         BAGS: 3,
         CONNECT: 4,
-        DISCONNECT: 5,
-        DRAIN: 6,
-        INFUND: 7,
-        CLAMP: 8,
-        UNCLAMP: 9,
-        SHUTDOWN: 10,
-        INTERRUPTION: 11,
-        OPTIONS: 12,
+        DRAIN: 5,
+        INFUND: 6,
+        DISCONNECT: 7,
+        SHUTDOWN: 8,
+        INTERRUPTION: 9,
+        OPTIONS: 10,
+        ERROR: 101
     }
 
     modules = {
